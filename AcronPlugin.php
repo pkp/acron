@@ -207,7 +207,6 @@ class AcronPlugin extends GenericPlugin
      */
     private function _shutdownFunction(string $workingDir): void
     {
-error_log('RUNNING SHUTDOWN FUNCTION');
         // Release requests from waiting the processing.
         header('Connection: close');
         // This header is needed so avoid using any kind of compression. If zlib is
