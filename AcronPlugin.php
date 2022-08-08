@@ -344,3 +344,7 @@ class AcronPlugin extends GenericPlugin
         return $tasksToRun;
     }
 }
+
+if (!PKP_STRICT_MODE) {
+    class_alias('\APP\plugins\generic\acron\AcronPlugin', '\AcronPlugin');
+}
