@@ -31,6 +31,8 @@ use PKP\plugins\PluginRegistry;
 use PKP\scheduledTask\ScheduledTaskHelper;
 use PKP\xml\PKPXMLParser;
 use PKP\xml\XMLNode;
+use PKP\scheduledTask\ScheduledTask;
+use PKP\scheduledTask\ScheduledTaskDAO;
 
 // TODO: Error handling. If a scheduled task encounters an error...?
 
@@ -226,10 +228,7 @@ class AcronPlugin extends GenericPlugin
         /** @var ScheduledTaskDAO */
         $taskDao = DAORegistry::getDAO('ScheduledTaskDAO');
         foreach ($this->_tasksToRun as $task) {
-            // Strip off the package name(s) to get the base class name
             $className = $task['className'];
-            $pos = strrpos($className, '.');
-            $baseClassName = $pos === false ? $className : substr($className, $pos + 1);
             $taskArgs = $task['args'] ?? [];
 
             // There's a race here. Several requests may come in closely spaced.
@@ -246,8 +245,19 @@ class AcronPlugin extends GenericPlugin
             if ($updateResult === false || $updateResult === 1) {
                 // DB doesn't support the get affected rows used inside update method, or one row was updated when we introduced a new last run time.
                 // Load and execute the task.
-                import($className);
-                $task = new $baseClassName($taskArgs);
+                //
+                if (preg_match('/^[a-zA-Z0-9_.]+$/', $className)) {
+                    // DEPRECATED as of 3.4.0: Use old class.name.style and import() function (pre-PSR classloading) pkp/pkp-lib#8186
+                    // Strip off the package name(s) to get the base class name
+                    $pos = strrpos($className, '.');
+                    $baseClassName = $pos === false ? $className : substr($className, $pos + 1);
+
+                    import($className);
+                    $task = new $baseClassName($taskArgs);
+                } else {
+                    $task = new $className($taskArgs);
+                    if (!$task instanceof ScheduledTask) throw new \Exception("Scheduled task $className was an unexpected class!");
+                }
                 $task->execute();
             }
         }
