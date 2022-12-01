@@ -24,7 +24,7 @@ use PKP\db\DAORegistry;
 use PKP\linkAction\LinkAction;
 use PKP\linkAction\request\AjaxAction;
 use PKP\notification\PKPNotification;
-use PKP\observers\events\PluginEnabledChanged;
+use PKP\observers\events\PluginSettingChanged;
 use PKP\plugins\GenericPlugin;
 use PKP\plugins\HookRegistry;
 use PKP\plugins\PluginRegistry;
@@ -57,7 +57,7 @@ class AcronPlugin extends GenericPlugin
             $this->addLocaleData();
             HookRegistry::register('LoadHandler', fn (string $hookName, array $args) => $this->_callbackLoadHandler($hookName, $args));
             // Reload cron tab when a plugin is enabled/disabled
-            Event::listen(PluginEnabledChanged::class, fn (PluginEnabledChanged $event) => $this->_callbackManage($event));
+            Event::listen(PluginSettingChanged::class, fn (PluginSettingChanged $event) => $this->_callbackManage($event));
         }
         return $success;
     }
@@ -189,8 +189,12 @@ class AcronPlugin extends GenericPlugin
      * Synchronize crontab with lazy load plugins management.
      * @see PluginHandler::plugin() for the hook call.
      */
-    private function _callbackManage(PluginEnabledChanged $event): bool
+    private function _callbackManage(PluginSettingChanged $event): bool
     {
+        if ($event->settingName !== 'enabled') {
+            return false;
+        }
+
         // Check if the plugin wants to add its own scheduled task into the cron tab.
         foreach (HookRegistry::getHooks('AcronPlugin::parseCronTab') ?? [] as $hookPriorityList) {
             foreach ($hookPriorityList as [$callback]) {
