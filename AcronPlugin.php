@@ -26,7 +26,7 @@ use PKP\linkAction\request\AjaxAction;
 use PKP\notification\PKPNotification;
 use PKP\observers\events\PluginSettingChanged;
 use PKP\plugins\GenericPlugin;
-use PKP\plugins\HookRegistry;
+use PKP\plugins\Hook;
 use PKP\plugins\PluginRegistry;
 use PKP\scheduledTask\ScheduledTaskHelper;
 use PKP\xml\PKPXMLParser;
@@ -48,14 +48,14 @@ class AcronPlugin extends GenericPlugin
     public function register($category, $path, $mainContextId = null): bool
     {
         $success = parent::register($category, $path, $mainContextId);
-        HookRegistry::register('Installer::postInstall', fn (string $hookName, array $args) => $this->_callbackPostInstall($hookName, $args));
+        Hook::add('Installer::postInstall', fn (string $hookName, array $args) => $this->_callbackPostInstall($hookName, $args));
 
         if (Application::isUnderMaintenance()) {
             return $success;
         }
         if ($success) {
             $this->addLocaleData();
-            HookRegistry::register('LoadHandler', fn (string $hookName, array $args) => $this->_callbackLoadHandler($hookName, $args));
+            Hook::add('LoadHandler', fn (string $hookName, array $args) => $this->_callbackLoadHandler($hookName, $args));
             // Reload cron tab when a plugin is enabled/disabled
             Event::listen(PluginSettingChanged::class, fn (PluginSettingChanged $event) => $this->_callbackManage($event));
         }
@@ -196,7 +196,7 @@ class AcronPlugin extends GenericPlugin
         }
 
         // Check if the plugin wants to add its own scheduled task into the cron tab.
-        foreach (HookRegistry::getHooks('AcronPlugin::parseCronTab') ?? [] as $hookPriorityList) {
+        foreach (Hook::getHooks('AcronPlugin::parseCronTab') ?? [] as $hookPriorityList) {
             foreach ($hookPriorityList as [$callback]) {
                 if ($callback == $event->plugin) {
                     $this->_parseCrontab();
@@ -281,7 +281,7 @@ class AcronPlugin extends GenericPlugin
         PluginRegistry::loadAllPlugins();
 
         // Let plugins register their scheduled tasks too.
-        HookRegistry::call('AcronPlugin::parseCronTab', [&$taskFilesPath]); // Reference needed.
+        Hook::call('AcronPlugin::parseCronTab', [&$taskFilesPath]); // Reference needed.
 
         // Add the default tasks file.
         $taskFilesPath[] = 'registry/scheduledTasks.xml'; // TODO: make this a plugin setting, rather than assuming.
