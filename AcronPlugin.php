@@ -98,7 +98,7 @@ class AcronPlugin extends GenericPlugin
     /**
      * @copydoc Plugin::getInstallSitePluginSettingsFile()
      */
-    public function getInstallSitePluginSettingsFile()
+    public function getInstallSitePluginSettingsFile(): string
     {
         return "{$this->getPluginPath()}/settings.xml";
     }
@@ -260,7 +260,9 @@ class AcronPlugin extends GenericPlugin
                     $task = new $baseClassName($taskArgs);
                 } else {
                     $task = new $className($taskArgs);
-                    if (!$task instanceof ScheduledTask) throw new \Exception("Scheduled task $className was an unexpected class!");
+                    if (!$task instanceof ScheduledTask) {
+                        throw new \Exception("Scheduled task $className was an unexpected class!");
+                    }
                 }
                 $task->execute();
             }
