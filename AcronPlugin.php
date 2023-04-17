@@ -1,13 +1,14 @@
 <?php
 
 /**
- * @file AcronPlugin.inc.php
+ * @file AcronPlugin.php
  *
  * Copyright (c) 2013-2022 Simon Fraser University
  * Copyright (c) 2000-2022 John Willinsky
  * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
  *
  * @class AcronPlugin
+ *
  * @brief Removes dependency on 'cron' for scheduled tasks, including
  * possible tasks defined by plugins. See the AcronPlugin::parseCrontab
  * hook implementation.
@@ -28,11 +29,11 @@ use PKP\observers\events\PluginSettingChanged;
 use PKP\plugins\GenericPlugin;
 use PKP\plugins\Hook;
 use PKP\plugins\PluginRegistry;
+use PKP\scheduledTask\ScheduledTask;
+use PKP\scheduledTask\ScheduledTaskDAO;
 use PKP\scheduledTask\ScheduledTaskHelper;
 use PKP\xml\PKPXMLParser;
 use PKP\xml\XMLNode;
-use PKP\scheduledTask\ScheduledTask;
-use PKP\scheduledTask\ScheduledTaskDAO;
 
 // TODO: Error handling. If a scheduled task encounters an error...?
 
@@ -139,6 +140,7 @@ class AcronPlugin extends GenericPlugin
 
     /**
      * Post install hook to flag cron tab reload on every install/upgrade.
+     *
      * @see Installer::postInstall() for the hook call.
      */
     private function _callbackPostInstall(string $hookName, array $args): bool
@@ -149,6 +151,7 @@ class AcronPlugin extends GenericPlugin
 
     /**
      * Load handler hook to check for tasks to run.
+     *
      * @see PKPPageRouter::loadHandler() for the hook call.
      */
     private function _callbackLoadHandler(string $hookName, array $args): bool
@@ -187,6 +190,7 @@ class AcronPlugin extends GenericPlugin
 
     /**
      * Synchronize crontab with lazy load plugins management.
+     *
      * @see PluginHandler::plugin() for the hook call.
      */
     private function _callbackManage(PluginSettingChanged $event): bool
@@ -261,7 +265,7 @@ class AcronPlugin extends GenericPlugin
                 } else {
                     $task = new $className($taskArgs);
                     if (!$task instanceof ScheduledTask) {
-                        throw new \Exception("Scheduled task $className was an unexpected class!");
+                        throw new \Exception("Scheduled task {$className} was an unexpected class!");
                     }
                 }
                 $task->execute();
