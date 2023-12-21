@@ -18,6 +18,7 @@ namespace APP\plugins\generic\acron;
 
 use APP\core\Application;
 use APP\notification\NotificationManager;
+use Closure;
 use Illuminate\Support\Facades\Event;
 use PKP\core\JSONMessage;
 use PKP\core\PKPPageRouter;
@@ -34,6 +35,7 @@ use PKP\scheduledTask\ScheduledTaskDAO;
 use PKP\scheduledTask\ScheduledTaskHelper;
 use PKP\xml\PKPXMLParser;
 use PKP\xml\XMLNode;
+use ReflectionFunction;
 
 // TODO: Error handling. If a scheduled task encounters an error...?
 
@@ -201,8 +203,9 @@ class AcronPlugin extends GenericPlugin
 
         // Check if the plugin wants to add its own scheduled task into the cron tab.
         foreach (Hook::getHooks('AcronPlugin::parseCronTab') ?? [] as $hookPriorityList) {
-            foreach ($hookPriorityList as [$callback]) {
-                if ($callback == $event->plugin) {
+            foreach ($hookPriorityList as $callback) {
+                $reflection = new ReflectionFunction(Closure::fromCallable($callback));
+                if ($reflection->getClosureThis() === $event->plugin) {
                     $this->_parseCrontab();
                     break 2;
                 }
