@@ -20,6 +20,7 @@ use APP\core\Application;
 use APP\notification\NotificationManager;
 use Closure;
 use Illuminate\Support\Facades\Event;
+use PKP\config\Config;
 use PKP\core\JSONMessage;
 use PKP\core\PKPPageRouter;
 use PKP\db\DAORegistry;
@@ -162,6 +163,12 @@ class AcronPlugin extends GenericPlugin
         $router = $request->getRouter();
         // Avoid controllers requests because of the shutdown function usage.
         if (!($router instanceof PKPPageRouter)) {
+            return false;
+        }
+        
+        // Application is set to sandbox mode and will not run any schedule tasks
+        if (Config::getVar('general', 'sandbox', false)) {
+            error_log('Application is set to sandbox mode and will not run any schedule tasks');
             return false;
         }
 
