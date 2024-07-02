@@ -52,16 +52,16 @@ class AcronPlugin extends GenericPlugin
     public function register($category, $path, $mainContextId = null): bool
     {
         $success = parent::register($category, $path, $mainContextId);
-        Hook::add('Installer::postInstall', fn (string $hookName, array $args) => $this->_callbackPostInstall($hookName, $args));
+        // Hook::add('Installer::postInstall', fn (string $hookName, array $args) => $this->_callbackPostInstall($hookName, $args));
 
         if (Application::isUnderMaintenance()) {
             return $success;
         }
         if ($success) {
-            $this->addLocaleData();
-            Hook::add('LoadHandler', fn (string $hookName, array $args) => $this->_callbackLoadHandler($hookName, $args));
-            // Reload cron tab when a plugin is enabled/disabled
-            Event::listen(PluginSettingChanged::class, fn (PluginSettingChanged $event) => $this->_callbackManage($event));
+            // $this->addLocaleData();
+            // Hook::add('LoadHandler', fn (string $hookName, array $args) => $this->_callbackLoadHandler($hookName, $args));
+            // // Reload cron tab when a plugin is enabled/disabled
+            // Event::listen(PluginSettingChanged::class, fn (PluginSettingChanged $event) => $this->_callbackManage($event));
         }
         return $success;
     }
