@@ -307,7 +307,7 @@ class AcronPlugin extends GenericPlugin
             $tree = $xmlParser->parse($filePath);
 
             if (!$tree) {
-                fatalError('Error parsing scheduled tasks XML file: ' . $filePath);
+                throw new \Exception('Error parsing scheduled tasks XML file: ' . $filePath);
             }
 
             foreach ($tree->getChildren() as $task) {
