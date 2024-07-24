@@ -165,7 +165,7 @@ class AcronPlugin extends GenericPlugin
         if (!($router instanceof PKPPageRouter)) {
             return false;
         }
-        
+
         // Application is set to sandbox mode and will not run any schedule tasks
         if (Config::getVar('general', 'sandbox', false)) {
             error_log('Application is set to sandbox mode and will not run any schedule tasks');
@@ -340,7 +340,7 @@ class AcronPlugin extends GenericPlugin
         }
 
         // Store the object.
-        $this->updateSetting(0, 'crontab', $tasks, 'object');
+        $this->updateSetting(Application::SITE_CONTEXT_ID, 'crontab', $tasks, 'object');
     }
 
     /**
@@ -348,17 +348,17 @@ class AcronPlugin extends GenericPlugin
      */
     private function _getTasksToRun(): array
     {
-        $isEnabled = $this->getSetting(0, 'enabled');
+        $isEnabled = $this->getSetting(Application::SITE_CONTEXT_ID, 'enabled');
         if (!$isEnabled) {
             return [];
         }
 
         $tasksToRun = [];
         // Grab the scheduled scheduled tree
-        $scheduledTasks = $this->getSetting(0, 'crontab');
+        $scheduledTasks = $this->getSetting(Application::SITE_CONTEXT_ID, 'crontab');
         if (is_null($scheduledTasks)) {
             $this->_parseCrontab();
-            $scheduledTasks = $this->getSetting(0, 'crontab');
+            $scheduledTasks = $this->getSetting(Application::SITE_CONTEXT_ID, 'crontab');
         }
 
         foreach ($scheduledTasks as $task) {
