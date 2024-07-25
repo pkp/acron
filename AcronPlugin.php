@@ -26,7 +26,7 @@ use PKP\core\PKPPageRouter;
 use PKP\db\DAORegistry;
 use PKP\linkAction\LinkAction;
 use PKP\linkAction\request\AjaxAction;
-use PKP\notification\PKPNotification;
+use PKP\notification\Notification;
 use PKP\observers\events\PluginSettingChanged;
 use PKP\plugins\GenericPlugin;
 use PKP\plugins\Hook;
@@ -135,7 +135,7 @@ class AcronPlugin extends GenericPlugin
         $user = $request->getUser();
         $notificationManager->createTrivialNotification(
             $user->getId(),
-            PKPNotification::NOTIFICATION_TYPE_SUCCESS,
+            Notification::NOTIFICATION_TYPE_SUCCESS,
             ['contents' => __('plugins.generic.acron.tasksReloaded')]
         );
         return \PKP\db\DAO::getDataChangedEvent();
